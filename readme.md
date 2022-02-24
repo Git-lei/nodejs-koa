@@ -48,7 +48,41 @@ npm i nodemon
 }
 ```
 
-```
+```shell
 npm run dev  // 启动dev调试
+```
+
+## 2.读取配置文件
+
+安装dotenv，读取根目录的 ```.env``` ，将配置写到 ```process.env``` 中
+
+```shell
+npm i dotenv
+```
+
+创建 .env
+
+```
+APP_PORT=8000
+```
+
+创建src/config/config.default.js
+
+```js
+const dotenv = require("dotenv")
+
+dotenv.config()
+
+module.exports = process.env
+```
+
+# 四、添加路由
+
+路由：根据的URL，调用对应的处理函数
+
+安装路由处理包 koa-router
+
+```shell
+npm i koa-router
 ```
 
