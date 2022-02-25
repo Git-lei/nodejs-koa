@@ -295,3 +295,107 @@ class UserService {
 module.exports = new UserService()
 ```
 
+# 七、数据库操作
+
+sequelize ORM 数据库工具
+
+ORM: 对象关系映射
+
+- 数据表映射(对应)一个类
+- 数据表中的数据行(记录)对应一个对象
+- 数据表字段对应对象的属性
+- 数据表的操作对应对象的方法
+
+#### 1.安装 sequelize mysql2
+
+```shell
+npm i mysql2 sequelize
+```
+
+```js
+// 新建 src/db/seq.js
+const { Sequelize } = require('sequelize')
+
+const {
+  MYSQL_HOST,
+  MYSQL_PORT,
+  MYSQL_USER,
+  MYSQL_PWD,
+  MYSQL_DB,
+} = require('../config/config.default')
+
+const seq = new Sequelize(MYSQL_DB, MYSQL_USER, MYSQL_PWD, {
+  host: MYSQL_HOST,
+  dialect: 'mysql',
+})
+
+// 测试数据库连接 node seq.js
+// 可能遇到的问题（引入变量名后，连接失败）：原因：注意 node 执行的目录，当前目录 // 下不能获取到 .env 的配置量，应该是在根目录下运行 node src/db/seq.js
+// seq
+//  .authenticate()
+//  .then(() => {
+//	  console.log('数据库连接成功')
+//  })
+//  .catch((err) => {
+//    console.log('数据库连接失败', err)
+//  })
+
+module.exports = seq
+```
+
+改写 .env
+
+```
+// .env
+APP_PORT=8000
+
+MYSQL_DB = zdsc
+MYSQL_HOST = localhost
+MYSQL_PORT = 3306
+MYSQL_USER = root
+MYSQL_PWD = 123456
+```
+
+# 八、创建User模型
+
+#### 1.拆分Model层
+
+sequlize 主要是通过Model 对应数据表
+
+创建 src/model/user.model.js
+
+```js
+const {DataTypes} = require('sequelize')
+
+const seq = require('../db/seq')
+
+// 创建模型 model
+const User = seq.define('zd_users', {
+  // 在这里定义模型属性 , id 会被sequelize 自动创建
+  user_name: {
+    type: DataTypes.STRING,
+    allowNull: false, // 是否允许为空
+    unique: true, // 唯一
+    comment: '用户名，唯一，不为空'
+  },
+  password: {
+    type: DataTypes.CHAR(64),
+    allowNull: false,
+    comment: '密码'
+  },
+  is_admin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: 0,
+    comment: '是否为管理员，1-是 0-不是'
+  }
+}, {
+  // 这是其他模型参数
+});
+
+// 强制同步数据库
+// User.sync({force: true})
+
+module.exports = User
+```
+
