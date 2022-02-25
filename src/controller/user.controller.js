@@ -1,4 +1,5 @@
 const {createUser, getUserInfo} = require('../service/user.service')
+const {userRegistError} =require('../constants/err.type')
 
 class userController {
   async register(ctx, next) {
@@ -8,15 +9,20 @@ class userController {
 
     // 2. 操作数据库
     // 3. 返回结果
-    const res = await createUser(user_name, password)
-    ctx.body = {
-      code: 0,
-      result: {
-        id: res.id,
-        user_name: res.user_name
-      },
-      message: '用户注册成功'
+    try {
+      const res = await createUser(user_name, password)
+      ctx.body = {
+        code: 0,
+        result: {
+          id: res.id,
+          user_name: res.user_name
+        },
+        message: '用户注册成功'
+      }
+    } catch (err) {
+      ctx.app.emit('error', userRegistError, ctx)
     }
+
   }
 
   async login(ctx, next) {
