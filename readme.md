@@ -36,7 +36,7 @@ app.listen(3000,()=>{
 安装nodemon工具
 
 ```shell
-npm i nodemon
+npm i nodemon -D
 ```
 
 编写package.json 脚本
@@ -224,5 +224,74 @@ router.post('/register',register)
 router.post('/login',login)
 
 module.exports = router
+```
+
+# 六、解析body
+
+#### 1.安装
+
+```shell
+npm i koa-body
+```
+
+#### 2.注册中间件
+
+```js
+// 改写 app/index.js
+const Koa = require('koa')
+// 导入包
+const koaBody = require('koa-body');
+
+const userRouter = require('../router/user.route')
+
+const app = new(Koa)
+
+// 注册中间件
+app.use(koaBody()); 
+app.use(userRouter.routes())
+
+module.exports = app
+```
+
+#### 3.解析请求数据
+
+```js
+//改写`user.controller.js`文件
+const { createUser } = require('../service/user.service')
+
+class UserController {
+  async register(ctx, next) {
+    // 1. 获取数据
+    // console.log(ctx.request.body)
+    const { user_name, password } = ctx.request.body
+    // 2. 操作数据库
+    const res = await createUser(user_name, password)
+    // console.log(res)
+    // 3. 返回结果
+    ctx.body = ctx.request.body
+  }
+
+  async login(ctx, next) {
+    ctx.body = '登录成功'
+  }
+}
+
+module.exports = new UserController()
+```
+
+#### 4. 拆分service 层
+
+service 层主要是做数据库处理
+
+```js
+// 创建`src/service/user.service.js`
+class UserService {
+  async createUser(user_name, password) {
+    // todo: 写入数据库
+    return 'success'
+  }
+}
+
+module.exports = new UserService()
 ```
 
