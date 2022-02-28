@@ -1,5 +1,20 @@
+const bcrypt = require('bcryptjs')
+
 const {getUserInfo} = require('../service/user.service')
 const {userFormatError, userAlreadyExisted, userRegistError} = require('../constants/err.type')
+
+// bcryptjs密码 加密
+const bcryptPassword = async (ctx, next) => {
+  const {password} = ctx.request.body
+
+  const salt = bcrypt.genSaltSync(10);
+  // hash 保存的是 密文
+  const hash = bcrypt.hashSync(password, salt);
+
+  ctx.request.body.password = hash;
+
+  await next()
+}
 
 const userValidator = async (ctx, next) => {
   const {user_name, password} = ctx.request.body
@@ -42,5 +57,5 @@ const verifyValidator = async (ctx, next) => {
 }
 
 module.exports = {
-  userValidator, verifyValidator
+  userValidator, verifyValidator, bcryptPassword
 }

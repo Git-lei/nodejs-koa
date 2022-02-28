@@ -3,7 +3,7 @@ const {userRegistError} =require('../constants/err.type')
 
 class userController {
   async register(ctx, next) {
-    // 1. 获取数据 并判断数据合法性 合理性
+    // 1. 获取数据 前面的中间件 已经处理了数据的合法性 合理性
     const {user_name, password} = ctx.request.body
     // console.log(ctx.request.body)
 
