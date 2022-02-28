@@ -21,7 +21,7 @@ class UserService {
       attributes: ['id', 'user_name', 'password', 'is_admin'],
       where: whereOpt
     })
-    console.log(res)
+    // console.log(res)
 
     return  res ? res.dataValues : null
   }
