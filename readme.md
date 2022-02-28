@@ -41,7 +41,7 @@ npm i nodemon -D
 
 编写package.json 脚本
 
-```json
+```
 "scripts": {
     "dev": "nodemon ./src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -82,7 +82,7 @@ module.exports = process.env
 // main.js 导入使用
 const {APP_PORT} = require('./config/config.default')
 
-···
+// ···
 
 app.listen(APP_PORT,()=>{
   console.log(`server is running on http://localhost:${APP_PORT}`)
@@ -112,7 +112,8 @@ const router = new Router();
 #### 3.编写路由，注册中间件
 
 ```js
-···
+// ···
+
 router.get('/',(ctx,next)=>{
   ctx.body = 'hello node router'
 })
