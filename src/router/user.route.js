@@ -1,7 +1,12 @@
 const Router = require('@koa/router');
 
-// 校验中间件  合法性  合理性  密码加密
-const {userValidator, verifyValidator, bcryptPassword} = require('../middleware/user.middleware')
+// 校验中间件  合法性（是否为空）、合理性（是否存在）、密码加密
+const {
+  userValidator,
+  verifyValidator,
+  verifyLogin,
+  bcryptPassword
+} = require('../middleware/user.middleware')
 
 // 控制器
 const {register, login} = require('../controller/user.controller')
@@ -14,6 +19,15 @@ const router = new Router({prefix: '/users'});
 router.post('/register', userValidator, verifyValidator, bcryptPassword, register)
 
 // 用户登录
-router.post('/login', login)
+router.post('/login', userValidator, verifyLogin, login)
+
+// 修改密码
+router.patch('/', (ctx, next) => {
+  const {authorization} = ctx.request.header;
+  const token = authorization.replace('Bearer ','')
+
+  ctx.body = 'success'
+})
+
 
 module.exports = router

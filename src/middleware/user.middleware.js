@@ -1,7 +1,14 @@
 const bcrypt = require('bcryptjs')
 
 const {getUserInfo} = require('../service/user.service')
-const {userFormatError, userAlreadyExisted, userRegistError} = require('../constants/err.type')
+const {
+  userFormatError,
+  userAlreadyExisted,
+  userRegistError,
+  userUnExist,
+  userLoginError,
+  userPasswordInvalided
+} = require('../constants/err.type')
 
 // bcryptjs密码 加密
 const bcryptPassword = async (ctx, next) => {
@@ -56,6 +63,33 @@ const verifyValidator = async (ctx, next) => {
   await next()
 }
 
+const verifyLogin = async (ctx, next) => {
+  const {user_name, password} = ctx.request.body
+  // 1. 根据用户名 判断是否存在
+  try {
+    const res = await getUserInfo({user_name})
+
+    if (!res) {
+      console.error('用户名不存在', {user_name})
+      // 用户名不存在
+      ctx.app.emit('error', userUnExist, ctx)
+      return
+    }
+    // 判断密码
+    if (!bcrypt.compareSync(password ? password : '', res.password)) {
+      // 密码无效
+      ctx.app.emit('error', userPasswordInvalided, ctx)
+      return
+    }
+  } catch (e) {
+    console.error(e)
+    // 登录失败
+    ctx.app.emit('error', userLoginError, ctx)
+  }
+
+  await next()
+}
+
 module.exports = {
-  userValidator, verifyValidator, bcryptPassword
+  userValidator, verifyValidator, bcryptPassword, verifyLogin
 }
