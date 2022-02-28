@@ -7,10 +7,10 @@ class userController {
     const {user_name, password} = ctx.request.body
     // console.log(ctx.request.body)
 
-    // 2. 操作数据库
-    // 3. 返回结果
     try {
+    // 2. 操作数据库
       const res = await createUser(user_name, password)
+      // 3. 返回结果
       ctx.body = {
         code: 0,
         result: {
