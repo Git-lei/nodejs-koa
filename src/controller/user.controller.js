@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 const {JWT_SECRET} = require('../config/config.default')
-const {createUser, getUserInfo} = require('../service/user.service')
+const {createUser, getUserInfo, updateUserById} = require('../service/user.service')
 const {userRegistError} = require('../constants/err.type')
 
 class userController {
@@ -38,14 +39,49 @@ class userController {
         code: '0',
         message: '登录成功！',
         result: {
-          token: jwt.sign(resUser, JWT_SECRET,{expiresIn: '1d'})
+          token: jwt.sign(resUser, JWT_SECRET, {expiresIn: '1d'}),
+          userInfo: resUser
         }
       }
     } catch (e) {
-      console.error('用户登录失败！',e)
+      console.error('用户登录失败！', e)
     }
 
 
+  }
+
+  async changePwd(ctx, next) {
+    const id = ctx.state.user.id
+    const password = ctx.request.body.password;
+
+    const userInfo = await getUserInfo({id})
+    console.log(userInfo.password, password)
+    // 判断密码
+    if (bcrypt.compareSync(password, userInfo.password)) {
+
+      ctx.body = {
+        code: '10008',
+        message: '新密码与原密码一致！',
+        result: ''
+      }
+      return
+    }
+
+    const res = await updateUserById({id, password})
+
+    if (res) {
+      ctx.body = {
+        code: '0',
+        message: '修改密码成功！',
+        result: ''
+      }
+    } else {
+      ctx.body = {
+        code: '10007',
+        message: '修改密码失败！',
+        result: ''
+      }
+    }
   }
 
 }

@@ -8,8 +8,12 @@ const {
   bcryptPassword
 } = require('../middleware/user.middleware')
 
+const {
+  auth
+} = require('../middleware/auth.middleware')
+
 // 控制器
-const {register, login} = require('../controller/user.controller')
+const {register, login, changePwd} = require('../controller/user.controller')
 
 // 实例化对象
 const router = new Router({prefix: '/users'});
@@ -22,12 +26,7 @@ router.post('/register', userValidator, verifyValidator, bcryptPassword, registe
 router.post('/login', userValidator, verifyLogin, login)
 
 // 修改密码
-router.patch('/', (ctx, next) => {
-  const {authorization} = ctx.request.header;
-  const token = authorization.replace('Bearer ','')
-
-  ctx.body = 'success'
-})
+router.patch('/', auth, bcryptPassword, changePwd)
 
 
 module.exports = router
