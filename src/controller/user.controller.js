@@ -54,18 +54,19 @@ class userController {
     const id = ctx.state.user.id
     const password = ctx.request.body.password;
 
-    const userInfo = await getUserInfo({id})
-    console.log(userInfo.password, password)
-    // 判断密码
-    if (bcrypt.compareSync(password, userInfo.password)) {
-
-      ctx.body = {
-        code: '10008',
-        message: '新密码与原密码一致！',
-        result: ''
-      }
-      return
-    }
+    // todo: 修改判断新密码与原密码一致 的逻辑
+    // const userInfo = await getUserInfo({id})
+    // console.log(userInfo.password, password)
+    // // 判断密码
+    // if (bcrypt.compareSync(password, userInfo.password)) {
+    //
+    //   ctx.body = {
+    //     code: '10008',
+    //     message: '新密码与原密码一致！',
+    //     result: ''
+    //   }
+    //   return
+    // }
 
     const res = await updateUserById({id, password})
 
