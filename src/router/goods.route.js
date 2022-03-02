@@ -3,8 +3,8 @@ const Router = require('@koa/router');
 const router = new Router({prefix: '/goods'});
 
 const {auth, hadAdminPermission} = require('../middleware/auth.middleware')
-const {goodsValidator} = require('../middleware/goods.middleware')
-const {upload, createGoods,updateGoods} = require('../controller/goods.controller')
+const {goodsValidator, goodsIdValidator} = require('../middleware/goods.middleware')
+const {upload, createGoods, updateGoods} = require('../controller/goods.controller')
 
 // 图片上传
 router.post('/upload', auth, hadAdminPermission, upload)
@@ -13,6 +13,6 @@ router.post('/upload', auth, hadAdminPermission, upload)
 router.post('/', auth, hadAdminPermission, goodsValidator, createGoods)
 
 // 修改商品信息
-router.put('/update/:id',auth,hadAdminPermission,updateGoods)
+router.put('/update/:id', auth, hadAdminPermission, goodsIdValidator, updateGoods)
 
 module.exports = router

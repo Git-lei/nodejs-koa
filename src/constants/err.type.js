@@ -71,5 +71,15 @@ module.exports = {
     code: '10303',
     message: '商品信息更新失败！',
     result: ''
+  },
+  goodsUnExistError:{
+    code: '10304',
+    message: '商品不存在！',
+    result: ''
+  },
+  goodsQueryError:{
+    code: '10305',
+    message: '查询商品失败！',
+    result: ''
   }
 }
