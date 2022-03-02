@@ -1,4 +1,5 @@
 module.exports = {
+  // 用户报错
   userFormatError: {
     code: "10001",
     message: "用户名或者密码为空！",
@@ -44,6 +45,7 @@ module.exports = {
     message: '权限不足！',
     result: ''
   },
+  // 操作报错
   fileUploadError:{
     code: '10201',
     message: '图片上传失败！',
@@ -53,6 +55,11 @@ module.exports = {
     code: '10202',
     message: '文件类型不支持！',
     result: ''
-
+  },
+  // 商品相关报错
+  goodsFormateError:{
+    code: '1030',
+    message: '商品数据格式错误！',
+    result: ''
   }
 }
