@@ -66,5 +66,10 @@ module.exports = {
     code: '10302',
     message: '商品创建失败！',
     result: ''
+  },
+  updateGoodsError:{
+    code: '10303',
+    message: '商品信息更新失败！',
+    result: ''
   }
 }
