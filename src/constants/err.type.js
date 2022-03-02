@@ -58,8 +58,13 @@ module.exports = {
   },
   // 商品相关报错
   goodsFormateError:{
-    code: '1030',
+    code: '10301',
     message: '商品数据格式错误！',
+    result: ''
+  },
+  createGoodsError:{
+    code: '10302',
+    message: '商品创建失败！',
     result: ''
   }
 }
