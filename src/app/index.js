@@ -11,6 +11,7 @@ const app = new (Koa)
 
 app.use(koaBody());
 app.use(router.routes())
+app.use(router.allowedMethods())
 
 // 进行统一的错误处理
 app.on('error', errHandler)
