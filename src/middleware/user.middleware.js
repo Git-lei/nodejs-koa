@@ -28,12 +28,6 @@ const userValidator = async (ctx, next) => {
   if (user_name && user_name == "" || password && password == "") {
     // 用户名 或者密码为空
     ctx.app.emit('error', userFormatError, ctx)
-    // ctx.status = 400;
-    // ctx.body = {
-    //   code: "10001",
-    //   message: "用户名或者密码为空！",
-    //   result: ""
-    // }
     return
   }
   await next()
@@ -42,12 +36,6 @@ const userValidator = async (ctx, next) => {
 const verifyValidator = async (ctx, next) => {
   const {user_name} = ctx.request.body
   // 如果用户存在
-  // if (await getUserInfo({user_name})) {
-  //   ctx.app.emit('error', userAlreadyExisted, ctx)
-  //   return
-  // }
-  // await next()
-
   try {
     const res = await getUserInfo({user_name})
     if (res) {
@@ -56,7 +44,7 @@ const verifyValidator = async (ctx, next) => {
       return
     }
   } catch (e) {
-    // 获取用户信息错误
+    // 注册失败
     ctx.app.emit('error', userRegistError, ctx)
     return
   }

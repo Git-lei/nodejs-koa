@@ -43,6 +43,16 @@ module.exports = {
     code: '10103',
     message: '权限不足！',
     result: ''
-  }
+  },
+  fileUploadError:{
+    code: '10201',
+    message: '图片上传失败！',
+    result: ''
+  },
+  fileUnsurportError:{
+    code: '10202',
+    message: '文件类型不支持！',
+    result: ''
 
+  }
 }

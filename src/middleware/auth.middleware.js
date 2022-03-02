@@ -4,7 +4,7 @@ const {JWT_SECRET} = require('../config/config.default')
 const {TokenExpiredError, invalidTokenError, hadAdminPermissionError} = require('../constants/err.type')
 
 const auth = async (ctx, next) => {
-  const {authorization} = ctx.request.header;
+  const {authorization = ''} = ctx.request.header;
   const token = authorization.replace('Bearer ', '')
   // invalid token - synchronous
   try {
