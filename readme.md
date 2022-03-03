@@ -400,3 +400,543 @@ const User = seq.define('zd_users', {
 module.exports = User
 ```
 
+# 九. 添加用户入库
+
+所有数据库的操作都在 Service 层完成, Service 调用 Model 完成数据库操作
+
+改写`src/service/user.service.js`
+
+```js
+const User = require('../model/use.model')
+
+class UserService {
+  async createUser(user_name, password) {
+    // 插入数据
+    // await表达式: promise对象的值
+    const res = await User.create({ user_name, password })
+    // console.log(res)
+
+    return res.dataValues
+  }
+}
+
+module.exports = new UserService()
+```
+
+同时, 改写`user.controller.js`
+
+```js
+const { createUser } = require('../service/user.service')
+
+class UserController {
+  async register(ctx, next) {
+    // 1. 获取数据
+    // console.log(ctx.request.body)
+    const { user_name, password } = ctx.request.body
+    // 2. 操作数据库
+    const res = await createUser(user_name, password)
+    // console.log(res)
+    // 3. 返回结果
+    ctx.body = {
+      code: 0,
+      message: '用户注册成功',
+      result: {
+        id: res.id,
+        user_name: res.user_name,
+      },
+    }
+  }
+
+  async login(ctx, next) {
+    ctx.body = '登录成功'
+  }
+}
+
+module.exports = new UserController()
+```
+
+# 十. 错误处理
+
+在控制器中, 对不同的错误进行处理, 返回不同的提示错误提示, 提高代码质量
+
+```js
+const { createUser, getUerInfo } = require('../service/user.service')
+
+class UserController {
+  async register(ctx, next) {
+    // 1. 获取数据
+    // console.log(ctx.request.body)
+    const { user_name, password } = ctx.request.body
+
+    // 合法性
+    if (!user_name || !password) {
+      console.error('用户名或密码为空', ctx.request.body)
+      ctx.status = 400
+      ctx.body = {
+        code: '10001',
+        message: '用户名或密码为空',
+        result: '',
+      }
+      return
+    }
+    // 合理性
+    if (getUerInfo({ user_name })) {
+      ctx.status = 409
+      ctx.body = {
+        code: '10002',
+        message: '用户已经存在',
+        result: '',
+      }
+      return
+    }
+    // 2. 操作数据库
+    const res = await createUser(user_name, password)
+    // console.log(res)
+    // 3. 返回结果
+    ctx.body = {
+      code: 0,
+      message: '用户注册成功',
+      result: {
+        id: res.id,
+        user_name: res.user_name,
+      },
+    }
+  }
+
+  async login(ctx, next) {
+    ctx.body = '登录成功'
+  }
+}
+
+module.exports = new UserController()
+```
+
+在 service 中封装函数
+
+```js
+const User = require('../model/use.model')
+
+class UserService {
+  async createUser(user_name, password) {
+    // 插入数据
+    // await表达式: promise对象的值
+    const res = await User.create({ user_name, password })
+    // console.log(res)
+
+    return res.dataValues
+  }
+
+  async getUerInfo({ id, user_name, password, is_admin }) {
+    const whereOpt = {}
+
+    id && Object.assign(whereOpt, { id })
+    user_name && Object.assign(whereOpt, { user_name })
+    password && Object.assign(whereOpt, { password })
+    is_admin && Object.assign(whereOpt, { is_admin })
+
+    const res = await User.findOne({
+      attributes: ['id', 'user_name', 'password', 'is_admin'],
+      where: whereOpt,
+    })
+
+    return res ? res.dataValues : null
+  }
+}
+
+module.exports = new UserService()
+```
+
+# 十一. 拆分中间件
+
+为了使代码的逻辑更加清晰, 我们可以拆分一个中间件层, 封装多个中间件函数
+
+![image-20210524154353520](http://image.brojie.cn/image-20210524154353520.png)
+
+## 1 拆分中间件
+
+添加`src/middleware/user.middleware.js`
+
+```js
+const { getUerInfo } = require('../service/user.service')
+const { userFormateError, userAlreadyExited } = require('../constant/err.type')
+
+const userValidator = async (ctx, next) => {
+  const { user_name, password } = ctx.request.body
+  // 合法性
+  if (!user_name || !password) {
+    console.error('用户名或密码为空', ctx.request.body)
+    ctx.app.emit('error', userFormateError, ctx)
+    return
+  }
+
+  await next()
+}
+
+const verifyUser = async (ctx, next) => {
+  const { user_name } = ctx.request.body
+
+  if (getUerInfo({ user_name })) {
+    ctx.app.emit('error', userAlreadyExited, ctx)
+    return
+  }
+
+  await next()
+}
+
+module.exports = {
+  userValidator,
+  verifyUser,
+}
+```
+
+## 2 统一错误处理
+
+- 在出错的地方使用`ctx.app.emit`提交错误
+- 在 app 中通过`app.on`监听
+
+编写统一的错误定义文件
+
+```js
+module.exports = {
+  userFormateError: {
+    code: '10001',
+    message: '用户名或密码为空',
+    result: '',
+  },
+  userAlreadyExited: {
+    code: '10002',
+    message: '用户已经存在',
+    result: '',
+  },
+}
+```
+
+## 3 错误处理函数
+
+```js
+module.exports = (err, ctx) => {
+  let status = 500
+  switch (err.code) {
+    case '10001':
+      status = 400
+      break
+    case '10002':
+      status = 409
+      break
+    default:
+      status = 500
+  }
+  ctx.status = status
+  ctx.body = err
+}
+```
+
+改写`app/index.js`
+
+```js
+const errHandler = require('./errHandler')
+// 统一的错误处理
+app.on('error', errHandler)
+```
+
+# 十二. 加密
+
+在将密码保存到数据库之前, 要对密码进行加密处理
+
+123123abc (加盐) 加盐加密
+
+## 1 安装 bcryptjs
+
+```
+npm i bcryptjs
+```
+
+## 2 编写加密中间件
+
+```js
+const crpytPassword = async (ctx, next) => {
+  const { password } = ctx.request.body
+
+  const salt = bcrypt.genSaltSync(10)
+  // hash保存的是 密文
+  const hash = bcrypt.hashSync(password, salt)
+
+  ctx.request.body.password = hash
+
+  await next()
+}
+```
+
+## 3 在 router 中使用
+
+改写`user.router.js`
+
+```js
+const Router = require('koa-router')
+
+const {
+  userValidator,
+  verifyUser,
+  crpytPassword,
+} = require('../middleware/user.middleware')
+const { register, login } = require('../controller/user.controller')
+
+const router = new Router({ prefix: '/users' })
+
+// 注册接口
+router.post('/register', userValidator, verifyUser, crpytPassword, register)
+
+// 登录接口
+router.post('/login', login)
+
+module.exports = router
+```
+
+# 十三. 登录验证
+
+流程:
+
+- 验证格式
+- 验证用户是否存在
+- 验证密码是否匹配
+
+改写`src/middleware/user.middleware.js`
+
+```js
+const bcrypt = require('bcryptjs')
+
+const { getUerInfo } = require('../service/user.service')
+const {
+  userFormateError,
+  userAlreadyExited,
+  userRegisterError,
+  userDoesNotExist,
+  userLoginError,
+  invalidPassword,
+} = require('../constant/err.type')
+
+const userValidator = async (ctx, next) => {
+  const { user_name, password } = ctx.request.body
+  // 合法性
+  if (!user_name || !password) {
+    console.error('用户名或密码为空', ctx.request.body)
+    ctx.app.emit('error', userFormateError, ctx)
+    return
+  }
+
+  await next()
+}
+
+const verifyUser = async (ctx, next) => {
+  const { user_name } = ctx.request.body
+
+  // if (await getUerInfo({ user_name })) {
+  //   ctx.app.emit('error', userAlreadyExited, ctx)
+  //   return
+  // }
+  try {
+    const res = await getUerInfo({ user_name })
+
+    if (res) {
+      console.error('用户名已经存在', { user_name })
+      ctx.app.emit('error', userAlreadyExited, ctx)
+      return
+    }
+  } catch (err) {
+    console.error('获取用户信息错误', err)
+    ctx.app.emit('error', userRegisterError, ctx)
+    return
+  }
+
+  await next()
+}
+
+const crpytPassword = async (ctx, next) => {
+  const { password } = ctx.request.body
+
+  const salt = bcrypt.genSaltSync(10)
+  // hash保存的是 密文
+  const hash = bcrypt.hashSync(password, salt)
+
+  ctx.request.body.password = hash
+
+  await next()
+}
+
+const verifyLogin = async (ctx, next) => {
+  // 1. 判断用户是否存在(不存在:报错)
+  const { user_name, password } = ctx.request.body
+
+  try {
+    const res = await getUerInfo({ user_name })
+
+    if (!res) {
+      console.error('用户名不存在', { user_name })
+      ctx.app.emit('error', userDoesNotExist, ctx)
+      return
+    }
+
+    // 2. 密码是否匹配(不匹配: 报错)
+    if (!bcrypt.compareSync(password, res.password)) {
+      ctx.app.emit('error', invalidPassword, ctx)
+      return
+    }
+  } catch (err) {
+    console.error(err)
+    return ctx.app.emit('error', userLoginError, ctx)
+  }
+
+  await next()
+}
+
+module.exports = {
+  userValidator,
+  verifyUser,
+  crpytPassword,
+  verifyLogin,
+}
+```
+
+定义错误类型 err.type.js
+
+```js
+module.exports = {
+  userFormateError: {
+    code: '10001',
+    message: '用户名或密码为空',
+    result: '',
+  },
+  userAlreadyExited: {
+    code: '10002',
+    message: '用户已经存在',
+    result: '',
+  },
+  userRegisterError: {
+    code: '10003',
+    message: '用户注册错误',
+    result: '',
+  },
+  userDoesNotExist: {
+    code: '10004',
+    message: '用户不存在',
+    result: '',
+  },
+  userLoginError: {
+    code: '10005',
+    message: '用户登录失败',
+    result: '',
+  },
+  invalidPassword: {
+    code: '10006',
+    message: '密码不匹配',
+    result: '',
+  },
+}
+```
+
+改写路由
+
+```js
+// 登录接口
+router.post('/login', userValidator, verifyLogin, login)
+```
+
+# 十四. 用户的认证
+
+登录成功后, 给用户颁发一个令牌 token, 用户在以后的每一次请求中携带这个令牌.
+
+jwt: jsonwebtoken
+
+- header: 头部
+- payload: 载荷
+- signature: 签名
+
+## 1 颁发 token
+
+### 1) 安装 jsonwebtoken
+
+```
+npm i jsonwebtoken
+```
+
+### 2) 在控制器中改写 login 方法
+
+```js
+// ....
+async login(ctx, next){
+  const { user_name } = ctx.request.body
+  // 1. 获取用户信息(在token的payload中, 记录id, user_name, is_admin)
+  try {
+    // 从返回结果对象中剔除password属性, 将剩下的属性放到res对象
+    const { password, ...res } = await getUerInfo({ user_name })
+    ctx.body = {
+      code: 0,
+      message: '用户登录成功',
+      result: {
+        token: jwt.sign(res, JWT_SECRET, { expiresIn: '1d' }),
+      },
+    }
+  } catch (err) {
+    console.error('用户登录失败', err)
+  }
+}
+```
+
+### 3) 定义私钥
+
+在`.env`定义
+
+```
+JWT_SECRET = xzd
+```
+
+## 2 用户认证
+
+### 1) 创建 auth 中间件
+
+```js
+const jwt = require('jsonwebtoken')
+
+const { JWT_SECRET } = require('../config/config.default')
+
+const { tokenExpiredError, invalidToken } = require('../constant/err.type')
+
+const auth = async (ctx, next) => {
+  const { authorization } = ctx.request.header
+  const token = authorization.replace('Bearer ', '')
+  console.log(token)
+
+  try {
+    // user中包含了payload的信息(id, user_name, is_admin)
+    const user = jwt.verify(token, JWT_SECRET)
+    ctx.state.user = user
+  } catch (err) {
+    switch (err.name) {
+      case 'TokenExpiredError':
+        console.error('token已过期', err)
+        return ctx.app.emit('error', tokenExpiredError, ctx)
+      case 'JsonWebTokenError':
+        console.error('无效的token', err)
+        return ctx.app.emit('error', invalidToken, ctx)
+    }
+  }
+
+  await next()
+}
+
+module.exports = {
+  auth,
+}
+```
+
+### 2) 改写 router
+
+```js
+// 修改密码接口
+router.patch('/', auth, (ctx, next) => {
+  console.log(ctx.state.user)
+  ctx.body = '修改密码成功'
+})
+```
+
+新的内容
