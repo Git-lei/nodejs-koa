@@ -550,7 +550,7 @@ module.exports = new UserService()
 
 为了使代码的逻辑更加清晰, 我们可以拆分一个中间件层, 封装多个中间件函数
 
-![image-20210524154353520](http://image.brojie.cn/image-20210524154353520.png)
+![流程图](https://invest-self.top/image-20210524154353520.png)
 
 ## 1 拆分中间件
 
