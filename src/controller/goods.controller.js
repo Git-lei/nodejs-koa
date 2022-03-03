@@ -74,6 +74,7 @@ class GoodsController {
     }
   }
 
+  //商品列表（分页）
   async getGoodsList(ctx){
     try {
       // 1. 解析pageNum和pageSize
