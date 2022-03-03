@@ -42,6 +42,23 @@ class GoodsService {
     return res ? res.dataValues : null
   }
 
+  // 获取商品列表
+  async getGoodsList(pageNum, pageSize) {
+    // 连接数据库
+    // const res = await Goods.findAll(pageNum, pageSize)
+
+    const offset = (pageNum - 1) * pageSize
+    const { count, rows } = await Goods.findAndCountAll({
+      offset: offset,
+      limit: pageSize * 1,
+    })
+    return {
+      pageNum,
+      pageSize,
+      total: count,
+      list: rows,
+    }
+  }
 }
 
 module.exports = new GoodsService()

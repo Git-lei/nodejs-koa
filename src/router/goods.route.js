@@ -16,7 +16,8 @@ const {
   updateGoods,
   removeGoods,
   offGoods,
-  restoreGoods
+  restoreGoods,
+  getGoodsList
 } = require('../controller/goods.controller')
 
 // 图片上传
@@ -36,5 +37,8 @@ router.post("/:id/off", auth, hadAdminPermission, offGoods)
 
 //上架商品
 router.post("/:id/on", auth, hadAdminPermission, restoreGoods)
+
+// 商品列表
+router.get('/',getGoodsList)
 
 module.exports = router

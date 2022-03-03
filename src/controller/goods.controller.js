@@ -7,10 +7,18 @@ const {
   updateGoodsError,
   removeGoodsError,
   offGoodsError,
-  restoreGoodsError
+  restoreGoodsError,
+  getGoodsListError
 } = require('../constants/err.type')
 
-const {create, update, remove, offGoods,restoreGoods} = require('../service/goods.service')
+const {
+  create,
+  update,
+  remove,
+  offGoods,
+  restoreGoods,
+  getGoodsList
+} = require('../service/goods.service')
 
 class GoodsController {
   // 上传图片
@@ -66,6 +74,22 @@ class GoodsController {
     }
   }
 
+  async getGoodsList(ctx){
+    try {
+      // 1. 解析pageNum和pageSize
+      const { pageNum = 1, pageSize = 10 } = ctx.request.query
+      // 2. 调用数据处理的相关方法
+      const res = await getGoodsList(pageNum, pageSize)      // 返回结果
+      ctx.body = {
+        code: 0,
+        message: '获取商品列表成功',
+        result: res
+      }
+    } catch (e) {
+      ctx.app.emit('error', getGoodsListError, ctx)
+    }
+  }
+
   // 删除商品
   async removeGoods(ctx) {
     try {
@@ -93,7 +117,7 @@ class GoodsController {
           result: ''
         }
       } else {
-        ctx.app.emit('error',invalidGoodsID , ctx)
+        ctx.app.emit('error', invalidGoodsID, ctx)
       }
     } catch (e) {
       ctx.app.emit('error', offGoodsError, ctx)

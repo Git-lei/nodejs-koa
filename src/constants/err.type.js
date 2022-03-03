@@ -72,6 +72,11 @@ module.exports = {
     message: '商品信息更新失败！',
     result: ''
   },
+  getGoodsListError:{
+    code: '10315',
+    message: '获取商品列表失败！',
+    result: ''
+  },
   goodsUnExistError:{
     code: '10304',
     message: '商品不存在！',
