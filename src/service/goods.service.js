@@ -7,9 +7,14 @@ class GoodsService {
     return res.dataValues
   }
 
-  更新商品信息
+  // 更新商品信息
   async update(id, data) {
     const res = await Goods.update(data, {where: {id}})
+    return res[0] > 0 ? true : false
+  }
+  // 更新商品信息
+  async remove(id) {
+    const res = await Goods.destroy({where: {id}})
     return res[0] > 0 ? true : false
   }
 

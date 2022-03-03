@@ -1,7 +1,13 @@
 const path = require('path')
-const {fileUploadError, fileUnsurportError, createGoodsError, updateGoodsError} = require('../constants/err.type')
+const {
+  fileUploadError,
+  fileUnsurportError,
+  createGoodsError,
+  updateGoodsError,
+  removeGoodsError
+} = require('../constants/err.type')
 
-const {create, update} = require('../service/goods.service')
+const {create, update, remove} = require('../service/goods.service')
 
 class GoodsController {
   // 上传图片
@@ -47,13 +53,28 @@ class GoodsController {
     try {
       const res = await update(ctx.params.id, ctx.request.body)
       // 返回结果
-        ctx.body = {
-          code: 0,
-          message: '商品信息更新成功',
-          result: ''
-        }
+      ctx.body = {
+        code: 0,
+        message: '商品信息更新成功',
+        result: ''
+      }
     } catch (e) {
       ctx.app.emit('error', updateGoodsError, ctx)
+    }
+  }
+
+  // 删除商品
+  async removeGoods(ctx) {
+    try {
+      const res = await remove(ctx.params.id, ctx.request.body)
+      // 返回结果
+      ctx.body = {
+        code: 0,
+        message: '商品删除成功',
+        result: ''
+      }
+    } catch (e) {
+      ctx.app.emit('error', removeGoodsError, ctx)
     }
   }
 }
