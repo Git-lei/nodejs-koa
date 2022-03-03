@@ -12,10 +12,23 @@ class GoodsService {
     const res = await Goods.update(data, {where: {id}})
     return res[0] > 0 ? true : false
   }
+
   // 更新商品信息
   async remove(id) {
     const res = await Goods.destroy({where: {id}})
     return res[0] > 0 ? true : false
+  }
+
+  // 下架商品
+  async offGoods(id) {
+    const res = await Goods.destroy({where: {id}})
+    return res > 0 ? true : false;
+  }
+
+  // 上架商品
+  async restoreGoods(id){
+    const res = await Goods.restore({where: {id}})
+    return res > 0 ? true : false;
   }
 
   // 获取商品信息
@@ -23,7 +36,7 @@ class GoodsService {
     // 连接数据库
     const whereOpt = {id}
     const res = await Goods.findOne({
-      attributes: ['id','goods_name','goods_price','goods_img','goods_sizeNUm'],
+      attributes: ['id', 'goods_name', 'goods_price', 'goods_img', 'goods_sizeNUm'],
       where: whereOpt
     })
     return res ? res.dataValues : null

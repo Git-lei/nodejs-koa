@@ -14,7 +14,9 @@ const {
   upload,
   createGoods,
   updateGoods,
-  removeGoods
+  removeGoods,
+  offGoods,
+  restoreGoods
 } = require('../controller/goods.controller')
 
 // 图片上传
@@ -28,5 +30,11 @@ router.put('/update/:id', auth, hadAdminPermission, goodsIdValidator, updateGood
 
 // 删除商品
 router.delete('/delete/:id', auth, hadAdminPermission, goodsIdValidator, removeGoods)
+
+// 下架商品
+router.post("/:id/off",auth,hadAdminPermission,offGoods)
+
+//上架商品
+router.post("/:id/on",auth,hadAdminPermission,restoreGoods)
 
 module.exports = router

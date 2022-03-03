@@ -3,11 +3,14 @@ const {
   fileUploadError,
   fileUnsurportError,
   createGoodsError,
+  invalidGoodsID,
   updateGoodsError,
-  removeGoodsError
+  removeGoodsError,
+  offGoodsError,
+  restoreGoodsError
 } = require('../constants/err.type')
 
-const {create, update, remove} = require('../service/goods.service')
+const {create, update, remove, offGoods,restoreGoods} = require('../service/goods.service')
 
 class GoodsController {
   // 上传图片
@@ -66,7 +69,7 @@ class GoodsController {
   // 删除商品
   async removeGoods(ctx) {
     try {
-      const res = await remove(ctx.params.id, ctx.request.body)
+      const res = await remove(ctx.params.id)
       // 返回结果
       ctx.body = {
         code: 0,
@@ -76,6 +79,44 @@ class GoodsController {
     } catch (e) {
       ctx.app.emit('error', removeGoodsError, ctx)
     }
+  }
+
+  //下架商品
+  async offGoods(ctx) {
+    try {
+      // 返回结果
+      const res = await offGoods(ctx.params.id)
+      if (res) {
+        ctx.body = {
+          code: 0,
+          message: '商品下架成功',
+          result: ''
+        }
+      } else {
+        ctx.app.emit('error',invalidGoodsID , ctx)
+      }
+    } catch (e) {
+      ctx.app.emit('error', offGoodsError, ctx)
+    }
+  }
+
+  // 上架商品
+  async restoreGoods(ctx) {
+    try {
+      const res = await restoreGoods(ctx.params.id)
+      if (res) {
+        ctx.body = {
+          code: 0,
+          message: '上架商品成功',
+          result: '',
+        }
+      } else {
+        return ctx.app.emit('error', invalidGoodsID, ctx)
+      }
+    } catch (e) {
+      return ctx.app.emit('error', restoreGoodsError, ctx)
+    }
+
   }
 }
 

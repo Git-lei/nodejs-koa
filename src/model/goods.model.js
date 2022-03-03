@@ -29,6 +29,7 @@ const Goods = seq.define('zd_goods', {
   }
 }, {
   // 这是其他模型参数
+  paranoid: true
 });
 
 // 强制同步数据库

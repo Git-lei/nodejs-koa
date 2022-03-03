@@ -83,8 +83,23 @@ module.exports = {
     result: ''
   },
   removeGoodsError:{
-    code: '10305',
+    code: '10306',
     message: '删除商品失败！',
     result: ''
-  }
+  },
+  offGoodsError:{
+    code: '10307',
+    message: '下架商品失败！',
+    result: ''
+  },
+  restoreGoodsError:{
+    code: '10308',
+    message: '上架商品失败！',
+    result: ''
+  },
+  invalidGoodsID: {
+    code: '10309',
+    message: '无效的商品id',
+    result: '',
+  },
 }
