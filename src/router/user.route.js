@@ -16,8 +16,8 @@ const {
 const {register, login, changePwd} = require('../controller/user.controller')
 
 // 实例化对象
-const router = new Router({prefix: '/users'});
-// 请求get '/users/*****' perfix 进行了处理 ==> 下面可以省略/users
+const router = new Router({prefix: '/api/users'});
+// 请求get '/api/users/*****' perfix 进行了预处理 ==> 下面可以省略/api/users
 
 // 用户注册  中间件 一层一层的 处理
 router.post('/register', userValidator, verifyValidator, bcryptPassword, register)

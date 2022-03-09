@@ -1,6 +1,6 @@
 const Router = require('@koa/router');
 // 实例化对象
-const router = new Router({prefix: '/goods'});
+const router = new Router({prefix: '/api/goods'});
 
 const {
   auth,
